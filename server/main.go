@@ -1,13 +1,36 @@
 package main
 
-import "github.com/gofiber/fiber/v2"
+import (
+	"log"
+
+	"github.com/gofiber/contrib/websocket"
+	"github.com/gofiber/fiber/v2"
+)
 
 func main() {
 	app := fiber.New()
 
-	app.Get("/", func(c *fiber.Ctx) error {
-		return c.SendString("Hello, World!")
-	})
+	app.Static("/", "./public")
 
-	app.Listen(":3000")
+	app.Get("/ws", websocket.New(func(c *websocket.Conn) {
+		var mt int
+		var msg []byte
+		var err error
+
+		for {
+			if mt, msg, err = c.ReadMessage(); err != nil {
+				log.Println("read:", err)
+				break
+			}
+
+			log.Printf("recv: %s", msg)
+
+			if err = c.WriteMessage(mt, msg); err != nil {
+				log.Println("write: ", err)
+				break
+			}
+		}
+	}))
+
+	log.Fatal(app.Listen(":3000"))
 }
