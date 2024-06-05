@@ -1,102 +1,84 @@
-/*
-    This sketch establishes a TCP connection to a "quote of the day" service.
-    It sends a "hello" message, and then prints received data.
-*/
-
 #include <ESP8266WiFi.h>
 #include <WebSocketsClient.h>
-#ifndef STASSID
-#define STASSID "gui"
-#define STAPSK "abcd5678"
-#endif
 
-// Wifi
-const char *ssid = STASSID;
-const char *password = STAPSK;
-
-const char *host = " 192.168.219.64";
+// WiFi and WebSocket configurations
+const char *ssid = "gui";
+const char *password = "abcd5678";
+const char *host = "192.168.219.64"; // IP address or domain name
 const uint16_t port = 3000;
 
-// GLP
-const int pinoLed = D12;   // PINO DIGITAL UTILIZADO PELO LED
-const int pinoSensor = D3; // PINO DIGITAL UTILIZADO PELO SENSOR
-int dt = 1000;
+WebSocketsClient webSocket;
+
+// Sensor and LED configurations
+const int pinoLed = D12;   // Digital pin used by the LED
+const int pinoSensor = D3; // Digital pin used by the sensor
+int dt = 100;
+
+void webSocketEvent(WStype_t type, uint8_t *payload, size_t length)
+{
+  switch (type)
+  {
+  case WStype_DISCONNECTED:
+    Serial.println("Disconnected!");
+    break;
+  case WStype_CONNECTED:
+    Serial.println("Connected to server");
+    webSocket.sendTXT("hello from ESP8266");
+    break;
+  case WStype_TEXT:
+    Serial.printf("Received: %s\n", payload);
+    break;
+  }
+}
 
 void setup()
 {
-  // Wifi
+  // Initialize serial communication
   Serial.begin(115200);
 
-  // We start by connecting to a WiFi network
-
-  Serial.println();
-  Serial.println();
-  Serial.print("Connecting to ");
-  Serial.println(ssid);
-
-  /* Explicitly set the ESP8266 to be a WiFi-client, otherwise, it by default,
-     would try to act as both a client and an access-point and could cause
-     network-issues with your other WiFi-devices on your WiFi-network. */
-  WiFi.mode(WIFI_STA);
+  // Initialize WiFi
   WiFi.begin(ssid, password);
-
   while (WiFi.status() != WL_CONNECTED)
   {
-    delay(500);
-    Serial.print(".");
+    delay(1000);
+    Serial.println("Connecting to WiFi...");
   }
+  Serial.println("Connected to WiFi");
 
-  Serial.println("");
-  Serial.println("WiFi connected");
-  Serial.println("IP address: ");
-  Serial.println(WiFi.localIP());
+  // Initialize WebSocket
+  webSocket.begin(host, port, "/");
+  webSocket.onEvent(webSocketEvent);
+  webSocket.setReconnectInterval(5000); // Reconnect every 5s if connection is lost
 
-  // GLP
-  pinMode(pinoSensor, INPUT); // DEFINE O PINO COMO ENTRADA
-  pinMode(pinoLed, OUTPUT);   // DEFINE O PINO COMO SAÍDA
-  digitalWrite(pinoLed, LOW); // LED INICIA DESLIGADO
+  // Initialize sensor and LED
+  pinMode(pinoSensor, INPUT); // Set pin as input
+  pinMode(pinoLed, OUTPUT);   // Set pin as output
+  digitalWrite(pinoLed, LOW); // LED initially off
 }
 
 void loop()
 {
-  // Server Connection
-  Serial.print("connecting to ");
-  Serial.print(host);
-  Serial.print(':');
-  Serial.println(port);
+  // WebSocket client loop
+  webSocket.loop();
 
-  // Use WiFiClient class to create TCP connections
-  WiFiClient client;
+  // Read sensor value
+  int sensorValue = digitalRead(pinoSensor);
+  Serial.println(sensorValue);
 
-  if (!client.connect(host, port))
-  {
-    Serial.println("connection failed");
-    Serial.println("wait 5 sec...");
-    delay(5000);
-    return;
+  // Control LED based on sensor value
+  if (sensorValue == LOW)
+  { // If sensor reads LOW, turn on the LED
+    digitalWrite(pinoLed, HIGH);
+  }
+  else
+  { // Otherwise, turn off the LED
+    digitalWrite(pinoLed, LOW);
   }
 
-  // This will send the request to the server
-  client.println("hello from ESP8266");
+  // Send sensor value over WebSocket
+  String message = "Sensor value: " + String(sensorValue);
+  webSocket.sendTXT(message);
 
-  // read back one line from server
-  Serial.println("receiving from remote server");
-  String line = client.readStringUntil('\r');
-  Serial.println(line);
-
-  Serial.println("closing connection");
-  client.stop();
-
-  Serial.print("Sensor State:");
-  Serial.println(digitalRead(pinoSensor));
-
-  if (digitalRead(pinoSensor) == LOW) // SE A LEITURA DO PINO FOR IGUAL A LOW, FAZ
-  {
-    digitalWrite(pinoLed, HIGH); // ACENDE O LED
-  }
-  else // SENÃO, FAZ
-  {
-    digitalWrite(pinoLed, LOW); // APAGA O LED
-  }
+  // Delay for a short period
   delay(dt);
 }
