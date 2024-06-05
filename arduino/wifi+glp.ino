@@ -10,8 +10,9 @@ const uint16_t port = 3000;
 WebSocketsClient webSocket;
 
 // Sensor and LED configurations
-const int pinoLed = D12;   // Digital pin used by the LED
-const int pinoSensor = D3; // Digital pin used by the sensor
+const int pinoLedVermelho = D12; // Digital pin used by the red LED
+const int pinoLedVerde = D13;    // Digital pin used by the green LED
+const int pinoSensor = D3;       // Digital pin used by the sensor
 int dt = 100;
 
 void webSocketEvent(WStype_t type, uint8_t *payload, size_t length)
@@ -50,10 +51,12 @@ void setup()
   webSocket.onEvent(webSocketEvent);
   webSocket.setReconnectInterval(5000); // Reconnect every 5s if connection is lost
 
-  // Initialize sensor and LED
-  pinMode(pinoSensor, INPUT); // Set pin as input
-  pinMode(pinoLed, OUTPUT);   // Set pin as output
-  digitalWrite(pinoLed, LOW); // LED initially off
+  // Initialize sensor and LEDs
+  pinMode(pinoSensor, INPUT);         // Set pin as input
+  pinMode(pinoLedVermelho, OUTPUT);   // Set pin as output for red LED
+  pinMode(pinoLedVerde, OUTPUT);      // Set pin as output for green LED
+  digitalWrite(pinoLedVermelho, LOW); // Red LED initially off
+  digitalWrite(pinoLedVerde, HIGH);   // Green LED initially on (complement of red LED)
 }
 
 void loop()
@@ -65,14 +68,16 @@ void loop()
   int sensorValue = digitalRead(pinoSensor);
   Serial.println(sensorValue);
 
-  // Control LED based on sensor value
+  // Control LEDs based on sensor value
   if (sensorValue == LOW)
-  { // If sensor reads LOW, turn on the LED
-    digitalWrite(pinoLed, HIGH);
+  { // If sensor reads LOW, turn on the red LED and off the green LED
+    digitalWrite(pinoLedVermelho, HIGH);
+    digitalWrite(pinoLedVerde, LOW);
   }
   else
-  { // Otherwise, turn off the LED
-    digitalWrite(pinoLed, LOW);
+  { // Otherwise, turn off the red LED and on the green LED
+    digitalWrite(pinoLedVermelho, LOW);
+    digitalWrite(pinoLedVerde, HIGH);
   }
 
   // Send sensor value over WebSocket
