@@ -10,9 +10,7 @@ import (
 func main() {
 	app := fiber.New()
 
-	app.Static("/", "./public")
-
-	app.Get("/ws", websocket.New(func(c *websocket.Conn) {
+	app.Get("/", websocket.New(func(c *websocket.Conn) {
 		var mt int
 		var msg []byte
 		var err error

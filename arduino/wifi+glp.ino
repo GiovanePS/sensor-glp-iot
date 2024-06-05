@@ -11,18 +11,19 @@
 #endif
 
 // Wifi
-const char* ssid = STASSID;
-const char* password = STAPSK;
+const char *ssid = STASSID;
+const char *password = STAPSK;
 
-const char* host = "djxmmx.net";
+const char *host = "djxmmx.net";
 const uint16_t port = 80;
 
 // GLP
-const int pinoLed = D12; //PINO DIGITAL UTILIZADO PELO LED
-const int pinoSensor = D3; //PINO DIGITAL UTILIZADO PELO SENSOR
+const int pinoLed = D12;   // PINO DIGITAL UTILIZADO PELO LED
+const int pinoSensor = D3; // PINO DIGITAL UTILIZADO PELO SENSOR
 int dt = 100;
 
-void setup() {
+void setup()
+{
   // Wifi
   Serial.begin(115200);
 
@@ -39,7 +40,8 @@ void setup() {
   WiFi.mode(WIFI_STA);
   WiFi.begin(ssid, password);
 
-  while (WiFi.status() != WL_CONNECTED) {
+  while (WiFi.status() != WL_CONNECTED)
+  {
     delay(500);
     Serial.print(".");
   }
@@ -50,13 +52,13 @@ void setup() {
   Serial.println(WiFi.localIP());
 
   // GLP
-  pinMode(pinoSensor, INPUT); //DEFINE O PINO COMO ENTRADA
-  pinMode(pinoLed, OUTPUT); //DEFINE O PINO COMO SAÍDA
-  digitalWrite(pinoLed, LOW); //LED INICIA DESLIGADO
-
+  pinMode(pinoSensor, INPUT); // DEFINE O PINO COMO ENTRADA
+  pinMode(pinoLed, OUTPUT);   // DEFINE O PINO COMO SAÍDA
+  digitalWrite(pinoLed, LOW); // LED INICIA DESLIGADO
 }
 
-void loop() {
+void loop()
+{
   static bool wait = false;
 
   Serial.print("connecting to ");
@@ -66,7 +68,8 @@ void loop() {
 
   // Use WiFiClient class to create TCP connections
   WiFiClient client;
-  if (!client.connect(host, port)) {
+  if (!client.connect(host, port))
+  {
     Serial.println("connection failed");
     delay(5000);
     return;
@@ -74,12 +77,17 @@ void loop() {
 
   // This will send a string to the server
   Serial.println("sending data to server");
-  if (client.connected()) { client.println("hello from ESP8266"); }
+  if (client.connected())
+  {
+    client.println("hello from ESP8266");
+  }
 
   // wait for data to be available
   unsigned long timeout = millis();
-  while (client.available() == 0) {
-    if (millis() - timeout > 5000) {
+  while (client.available() == 0)
+  {
+    if (millis() - timeout > 5000)
+    {
       Serial.println(">>> Client Timeout !");
       client.stop();
       delay(60000);
@@ -90,7 +98,8 @@ void loop() {
   // Read all the lines of the reply from server and print them to Serial
   Serial.println("receiving from remote server");
   // not testing 'client.connected()' since we do not need to send data here
-  while (client.available()) {
+  while (client.available())
+  {
     char ch = static_cast<char>(client.read());
     Serial.print(ch);
   }
@@ -100,16 +109,20 @@ void loop() {
   Serial.println("closing connection");
   client.stop();
 
-  if (wait) {
-    delay(300000);  // execute once every 5 minutes, don't flood remote service
+  if (wait)
+  {
+    delay(300000); // execute once every 5 minutes, don't flood remote service
   }
   // wait = true;
   Serial.print("Sensor State:");
   Serial.println(digitalRead(pinoSensor));
-  if(digitalRead(pinoSensor) == LOW){ //SE A LEITURA DO PINO FOR IGUAL A LOW, FAZ
-      digitalWrite(pinoLed, HIGH); //ACENDE O LED
-  }else{ //SENÃO, FAZ
-    digitalWrite(pinoLed, LOW); //APAGA O LED
+  if (digitalRead(pinoSensor) == LOW)
+  {                              // SE A LEITURA DO PINO FOR IGUAL A LOW, FAZ
+    digitalWrite(pinoLed, HIGH); // ACENDE O LED
+  }
+  else
+  {                             // SENÃO, FAZ
+    digitalWrite(pinoLed, LOW); // APAGA O LED
   }
   // delay(dt);
 }
