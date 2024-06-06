@@ -10,9 +10,10 @@ const uint16_t port = 3000;
 WebSocketsClient webSocket;
 
 // Sensor and LED configurations
-const int pinoLedVermelho = D12; // Digital pin used by the red LED
-const int pinoLedVerde = D13;    // Digital pin used by the green LED
-const int pinoSensor = D3;       // Digital pin used by the sensor
+const int redPin = D12;
+const int greenPin = D13;
+const int glpPin = D3;
+
 int dt = 100;
 
 void webSocketEvent(WStype_t type, uint8_t *payload, size_t length)
@@ -24,7 +25,6 @@ void webSocketEvent(WStype_t type, uint8_t *payload, size_t length)
     break;
   case WStype_CONNECTED:
     Serial.println("Connected to server");
-    webSocket.sendTXT("hello from ESP8266");
     break;
   case WStype_TEXT:
     Serial.printf("Received: %s\n", payload);
@@ -34,7 +34,6 @@ void webSocketEvent(WStype_t type, uint8_t *payload, size_t length)
 
 void setup()
 {
-  // Initialize serial communication
   Serial.begin(115200);
 
   // Initialize WiFi
@@ -52,11 +51,13 @@ void setup()
   webSocket.setReconnectInterval(5000); // Reconnect every 5s if connection is lost
 
   // Initialize sensor and LEDs
-  pinMode(pinoSensor, INPUT);         // Set pin as input
-  pinMode(pinoLedVermelho, OUTPUT);   // Set pin as output for red LED
-  pinMode(pinoLedVerde, OUTPUT);      // Set pin as output for green LED
-  digitalWrite(pinoLedVermelho, LOW); // Red LED initially off
-  digitalWrite(pinoLedVerde, HIGH);   // Green LED initially on (complement of red LED)
+  pinMode(glpPin, INPUT);
+  pinMode(redPin, OUTPUT);
+  pinMode(greenPin, OUTPUT);
+
+  // Turn off the red LED and on the green LED
+  digitalWrite(redPin, LOW);
+  digitalWrite(greenPin, HIGH);
 }
 
 void loop()
@@ -65,23 +66,23 @@ void loop()
   webSocket.loop();
 
   // Read sensor value
-  int sensorValue = digitalRead(pinoSensor);
+  int sensorValue = digitalRead(glpPin);
   Serial.println(sensorValue);
 
   // Control LEDs based on sensor value
   if (sensorValue == LOW)
   { // If sensor reads LOW, turn on the red LED and off the green LED
-    digitalWrite(pinoLedVermelho, HIGH);
-    digitalWrite(pinoLedVerde, LOW);
+    digitalWrite(redPin, HIGH);
+    digitalWrite(greenPin, LOW);
   }
   else
   { // Otherwise, turn off the red LED and on the green LED
-    digitalWrite(pinoLedVermelho, LOW);
-    digitalWrite(pinoLedVerde, HIGH);
+    digitalWrite(redPin, LOW);
+    digitalWrite(greenPin, HIGH);
   }
 
   // Send sensor value over WebSocket
-  String message = "Sensor value: " + String(sensorValue);
+  String message = String(sensorValue);
   webSocket.sendTXT(message);
 
   // Delay for a short period
