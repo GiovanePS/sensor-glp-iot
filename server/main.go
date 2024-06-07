@@ -1,33 +1,16 @@
 package main
 
-import (
-	"log"
-	"github.com/gofiber/contrib/websocket"
-	"github.com/gofiber/fiber/v2"
-)
+import "github.com/gofiber/fiber/v2/log"
 
 func main() {
-	app := fiber.New()
 
-	app.Get("/", websocket.New(func(c *websocket.Conn) {
-		var mt int
-		var msg []byte
-		var err error
+	err := InitializePostgres()
 
-		for {
-			if mt, msg, err = c.ReadMessage(); err != nil {
-				log.Println("read:", err)
-				break
-			}
+	if err != nil {
+		log.Errorf("Postgres initialization error: %v", err)
+		return
+	}
 
-			log.Printf("recv: %s", msg)
+	WebsocketInit()
 
-			if err = c.WriteMessage(mt, msg); err != nil {
-				log.Println("write: ", err)
-				break
-			}
-		}
-	}))
-
-	log.Fatal(app.Listen(":3000"))
 }
