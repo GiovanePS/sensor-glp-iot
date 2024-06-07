@@ -1,7 +1,5 @@
 FROM postgres
 
-COPY /database /iot/database
-
 ENV POSTGRES_USER=admin
 ENV POSTGRES_PASSWORD=admin
 ENV POSTGRES_DB=database
@@ -11,9 +9,7 @@ WORKDIR /iot
 
 EXPOSE 5432
 
-COPY /docker/init-db.sh /docker-entrypoint-initdb.d/init-db.sh
-
-RUN chmod +x /docker-entrypoint-initdb.d/init-db.sh
+COPY /database/initdb.sql /docker-entrypoint-initdb.d/initdb.sql
 
 ENTRYPOINT [ "docker-entrypoint.sh" ]
 
