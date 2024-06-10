@@ -2,7 +2,7 @@ version: '3.8'
 
 services:
   postgres:
-    image: iot-postgres-image
+    image: iot-postgres-image:latest
     environment:
       POSTGRES_USER: admin
       POSTGRES_PASSWORD: admin
@@ -15,7 +15,7 @@ services:
       - network
 
   golang-server:
-    image: iot-server-image
+    image: iot-server-image:latest
     ports:
       - "3000:3000"
     depends_on:
