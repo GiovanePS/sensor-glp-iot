@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"time"
 
@@ -8,7 +9,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
-func WebsocketInit() {
+func RunWebsocket() {
 	app := fiber.New()
 
 	app.Get("/", websocket.New(func(c *websocket.Conn) {
@@ -20,7 +21,7 @@ func WebsocketInit() {
 		started, finished := false, false
 		for {
 			if messageType, message, err = c.ReadMessage(); err != nil {
-				log.Println("read:", err)
+				log.Fatalf("Error on read message: %v", err)
 				break
 			}
 
@@ -44,10 +45,10 @@ func WebsocketInit() {
 				started, finished = false, false
 			}
 
-			log.Printf("recv: %s", message)
+			fmt.Printf("%s", message)
 
 			if err = c.WriteMessage(messageType, message); err != nil {
-				log.Println("write: ", err)
+				log.Fatalf("Error on write message: %v", err)
 				break
 			}
 		}

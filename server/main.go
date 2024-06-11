@@ -11,6 +11,5 @@ func main() {
 		return
 	}
 
-	WebsocketInit()
-
+	RunWebsocket()
 }
