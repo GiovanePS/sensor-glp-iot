@@ -13,27 +13,30 @@ func RunWebsocket() {
 	app := fiber.New()
 
 	app.Get("/", websocket.New(func(c *websocket.Conn) {
-		var messageType int
 		var message []byte
-		var err error
 
 		var record Record
 		started, finished := false, false
 		for {
-			if messageType, message, err = c.ReadMessage(); err != nil {
-				log.Fatalf("Error on read message: %v", err)
-				break
-			}
+			_, message, _ = c.ReadMessage()
 
-			/*
-				TODO: FUNCTION THAT RECEIVES THE MESSAGE AND TESTS TO SET `started` TO `true`
-			*/
+			value := int(message[0])
+
+			if value == 48 && !started {
+				started = true
+				fmt.Printf("Started: %v\n", started)
+			}
 
 			// Start of counting the duration time of sensor capture gas
 			if started {
 				record = Record{
 					start_time: time.Now(),
 				}
+			}
+			
+			if started && value == 49 {
+				finished = true
+				fmt.Printf("Finished: %v\n", finished)
 			}
 
 			// End of the duration
@@ -45,12 +48,8 @@ func RunWebsocket() {
 				started, finished = false, false
 			}
 
-			fmt.Printf("%s", message)
+			fmt.Printf("Message: %s\n", message)
 
-			if err = c.WriteMessage(messageType, message); err != nil {
-				log.Fatalf("Error on write message: %v", err)
-				break
-			}
 		}
 	}))
 
