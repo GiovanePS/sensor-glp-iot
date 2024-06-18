@@ -14,9 +14,8 @@ func RunWebsocket() {
 
 	app.Get("/", websocket.New(func(c *websocket.Conn) {
 		var message []byte
-
-		var record Record
 		
+		var record Record
 		var start_time time.Time
 		var end_time time.Time
 		var duration time.Duration
@@ -31,6 +30,7 @@ func RunWebsocket() {
 			if value == 48 && !started {
 				started = true
 				fmt.Printf("Started: %v\n", started)
+				start_time = time.Now()
 			}
 
 			// Start of counting the duration time of sensor capture gas
@@ -43,15 +43,22 @@ func RunWebsocket() {
 				end_time = time.Now()
 				duration = end_time.Sub(start_time)
 
+				// d := (time.Millisecond * 1)
+				// duration = duration.Round(d)
+				seconds := duration.Seconds()
+				
 				record = Record{
 					start_time: start_time,
 					end_time: end_time,
-					duration: duration,
+					duration: seconds,
 				}
+				
+				fmt.Printf("Start Time: %v\n", start_time)
+				fmt.Printf("End Time: %v\n", end_time)
+				fmt.Printf("Duration: %s\n", duration)
 				
 				InsertRecord(record)
 				
-				fmt.Printf("Duration: %v\n", record.duration)
 				started, finished = false, false
 			}
 
