@@ -10,61 +10,61 @@ import (
 )
 
 func RunWebsocket() {
-	app := fiber.New()
+    app := fiber.New()
 
-	app.Get("/", websocket.New(func(c *websocket.Conn) {
-		var message []byte
-		
-		var record Record
-		var start_time time.Time
-		var end_time time.Time
-		var duration time.Duration
-		
-		started, finished := false, false
-		
-		for {
-			_, message, _ = c.ReadMessage()
+    app.Get("/", websocket.New(func(c *websocket.Conn) {
+        defer func() {
+            if r := recover(); r != nil {
+                log.Printf("Recovered from panic: %v", r)
+            }
+        }()
 
-			value := int(message[0])
+        // var message []byte
+        var record Record
+        var startTime time.Time
+        var endTime time.Time
+        var duration time.Duration
 
-			if value == 48 && !started {
-				started = true
-				fmt.Printf("Started: %v\n", started)
-				start_time = time.Now()
-			}
+        started, finished := false, false
 
-			// Start of counting the duration time of sensor capture gas
-			if started && value == 49 {
-				finished = true
-				fmt.Printf("Finished: %v\n", finished)
-			}
+        for {
+            _, message, err := c.ReadMessage()
+            if err != nil {
+                log.Println("read:", err)
+                break // Exit the loop if there is an error
+            }
 
-			if finished {
-				end_time = time.Now()
-				duration = end_time.Sub(start_time)
+            fmt.Printf("%s", message)
+            value := message[0] // Assuming message is a byte array containing '0' or '1'
 
-				// d := (time.Millisecond * 1)
-				// duration = duration.Round(d)
-				seconds := duration.Seconds()
-				
-				record = Record{
-					start_time: start_time,
-					end_time: end_time,
-					duration: seconds,
-				}
-				
-				fmt.Printf("Start Time: %v\n", start_time)
-				fmt.Printf("End Time: %v\n", end_time)
-				fmt.Printf("Duration: %s\n", duration)
-				
-				InsertRecord(record)
-				
-				started, finished = false, false
-			}
+            if value == '0' && !started {
+                started = true
+                startTime = time.Now()
+            }
 
-			fmt.Printf("%s", message)
-		}
-	}))
+            if started && value == '1' {
+                finished = true
+            }
 
-	log.Fatal(app.Listen(":3000"))
+            if finished {
+                endTime = time.Now()
+                duration = endTime.Sub(startTime)
+
+                seconds := duration.Seconds()
+
+                record = Record{
+                    start_time: startTime,
+                    end_time:   endTime,
+                    duration:   seconds,
+                }
+                fmt.Println(record)
+				// InsertRecord(record)
+
+                // Reset flags
+                started, finished = false, false
+            }
+        }
+    }))
+
+    log.Fatal(app.Listen(":3000"))
 }
