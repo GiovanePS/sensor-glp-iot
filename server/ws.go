@@ -32,14 +32,16 @@ func RunWebsocket() {
 			// Read message from client
             msgType, msg, err := c.ReadMessage()
             if err != nil {
-                log.Println("Error reading message:", err)
+                log.Println("Error reading:", err)
                 break 
             }
-            fmt.Printf("Received: %s", msg) // Print message to console
+            fmt.Printf("R: %s\n", msg) // Print message to console
+            c.WriteMessage(msgType, msg)
 			
 			// Write message back to client
-            if err = c.WriteMessage(msgType, []byte("Server received: "+string(msg))); err != nil {
-                log.Println("Error writing message:", err)
+            if err = c.WriteMessage(msgType, msg); err != nil {
+                // log.Printf("msgType: %d, msg: %s\n", msgType, msg)
+                log.Println("Error writing:", err)
                 break
             }
 
@@ -68,7 +70,7 @@ func RunWebsocket() {
 				
 				// fmt.Printf("Start Time: %v\n", start_time)
 				// fmt.Printf("End Time: %v\n", end_time)
-				fmt.Printf("Duration: %s\n", duration)
+                fmt.Printf("Duration: %f\n", duration)
 				
 				InsertRecord(record)
 				

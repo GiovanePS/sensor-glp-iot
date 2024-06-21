@@ -4,6 +4,7 @@
 // WiFi and WebSocket configurations
 const char *ssid = "gui";
 const char *password = "abcd5678";
+
 const char *host = "192.168.219.64"; // IP address or domain name
 const uint16_t port = 3000;
 

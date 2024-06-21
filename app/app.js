@@ -4,12 +4,12 @@ ws.onopen = () => {
     console.log("Connected to server");
 }
 
-ws.onmessage = ({data}) => {
-    console.log(`Msg from server: ${data}`);
+ws.onmessage = (event) => {
+    console.log(`Msg from server: ${event.data}`);
 
     const msgDiv = document.getElementById("msgDiv");
     const msg = document.createElement("p");
-    msg.innerText = data;
+    msg.innerText = event.data;
     msgDiv.appendChild(msg);
 }
 
