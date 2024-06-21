@@ -4,8 +4,7 @@
 // WiFi and WebSocket configurations
 const char *ssid = "gui";
 const char *password = "abcd5678";
-
-const char *host = "192.168.219.64"; // IP address or domain name
+const char *host = "192.168.80.64";
 const uint16_t port = 3000;
 
 WebSocketsClient webSocket;
@@ -49,43 +48,33 @@ void setup()
   // Initialize WebSocket
   webSocket.begin(host, port, "/");
   webSocket.onEvent(webSocketEvent);
-  webSocket.setReconnectInterval(5000); // Reconnect every 5s if connection is lost
+  webSocket.setReconnectInterval(5000);
 
   // Initialize sensor and LEDs
   pinMode(glpPin, INPUT);
   pinMode(redPin, OUTPUT);
   pinMode(greenPin, OUTPUT);
-
-  // Turn off the red LED and on the green LED
   digitalWrite(redPin, LOW);
   digitalWrite(greenPin, HIGH);
 }
 
 void loop()
 {
-  // WebSocket client loop
   webSocket.loop();
-
-  // Read sensor value
   int sensorValue = digitalRead(glpPin);
   Serial.println(sensorValue);
 
-  // Control LEDs based on sensor value
   if (sensorValue == LOW)
-  { // If sensor reads LOW, turn on the red LED and off the green LED
+  {
     digitalWrite(redPin, HIGH);
     digitalWrite(greenPin, LOW);
   }
   else
-  { // Otherwise, turn off the red LED and on the green LED
+  {
     digitalWrite(redPin, LOW);
     digitalWrite(greenPin, HIGH);
   }
 
-  // Send sensor value over WebSocket
-  String message = String(sensorValue);
-  webSocket.sendTXT(message);
-
-  // Delay for a short period
+  webSocket.sendTXT(String(sensorValue));
   delay(dt);
 }
