@@ -3,21 +3,29 @@ package main
 import (
 	"fmt"
 	"log"
+	"sync"
 	"time"
 
 	"github.com/gofiber/contrib/websocket"
 	"github.com/gofiber/fiber/v2"
 )
 
+var clients = sync.Map{}
+
 func RunWebsocket() {
     app := fiber.New()
 
     app.Get("/", websocket.New(func(c *websocket.Conn) {
         defer func() {
-            if r := recover(); r != nil {
-                log.Printf("Recovered from panic: %v", r)
-            }
-        }()
+			if err := c.Close(); err != nil {
+				log.Println("Error closing connection:", err)
+			}
+			clients.Delete(c)
+			log.Println("Client disconnected")
+		}()
+
+		log.Println("New client connected")
+		clients.Store(c, true)
 
         var record Record
         var start_time time.Time
@@ -26,24 +34,23 @@ func RunWebsocket() {
 
         started, finished := false, false
 
-		log.Println("New client connected")
-
         for {
 			// Read message from client
-            msgType, msg, err := c.ReadMessage()
-            if err != nil {
-                log.Println("Error reading:", err)
-                break 
-            }
-            fmt.Printf("R: %s\n", msg) // Print message to console
-            c.WriteMessage(msgType, msg)
-			
-			// Write message back to client
-            if err = c.WriteMessage(msgType, msg); err != nil {
-                // log.Printf("msgType: %d, msg: %s\n", msgType, msg)
-                log.Println("Error writing:", err)
-                break
-            }
+			msgType, msg, err := c.ReadMessage()
+			if err != nil {
+				log.Println("Error reading message:", err)
+				break
+			}
+			fmt.Printf("R: %s\n", msg) // Print message to console
+
+			// Echo the message back to all clients
+			clients.Range(func(key, value interface{}) bool {
+				client := key.(*websocket.Conn)
+				if err := client.WriteMessage(msgType, msg); err != nil {
+					log.Println("Error writing message:", err)
+				}
+				return true
+			})
 
             value := msg[0]
 
@@ -59,9 +66,8 @@ func RunWebsocket() {
             if finished {
                 end_time = time.Now()
                 duration = end_time.Sub(start_time)
-
 				duration := duration.Seconds()
-				
+
 				record = Record{
 					start_time: start_time,
 					end_time: end_time,
@@ -76,11 +82,9 @@ func RunWebsocket() {
 				
 				started, finished = false, false
 			}
-
 		}
-		log.Println("Client disconnected")
-	}))
 		
 	log.Println("Server started at :3000")
 	log.Fatal(app.Listen(":3000"))
+    }))
 }

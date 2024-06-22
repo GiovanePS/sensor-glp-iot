@@ -21,24 +21,24 @@ func InitializePostgres() error {
 	   log.Fatal("Error loading .env file")
 	 }
 	
-	fmt.Println("Connecting to Postgres...")
-
-
-	dsn := fmt.Sprintf("host=%v user=%v password=%v dbname=%v port=%v sslmode=disable",
-		os.Getenv("POSTGRES_HOST"),
-		os.Getenv("POSTGRES_USER"),
-		os.Getenv("POSTGRES_PASSWORD"),
-		os.Getenv("POSTGRES_DBNAME"),
-		os.Getenv("POSTGRES_PORT"),
+	 
+	 
+	 dsn := fmt.Sprintf("host=%v user=%v password=%v dbname=%v port=%v sslmode=disable",
+	 os.Getenv("POSTGRES_HOST"),
+	 os.Getenv("POSTGRES_USER"),
+	 os.Getenv("POSTGRES_PASSWORD"),
+	 os.Getenv("POSTGRES_DBNAME"),
+	 os.Getenv("POSTGRES_PORT"),
 	)
-
+	
 	database, err := sql.Open("postgres", dsn)
-
+	
 	if err != nil {
 		panic(err)
 	}
-
+	
 	dbConn = database
-
+	
+	fmt.Println("Connected to Postgres")
 	return err
 }
