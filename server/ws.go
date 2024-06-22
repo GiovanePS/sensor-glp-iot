@@ -13,10 +13,10 @@ import (
 var clients = sync.Map{}
 
 func RunWebsocket() {
-    app := fiber.New()
+	app := fiber.New()
 
-    app.Get("/", websocket.New(func(c *websocket.Conn) {
-        defer func() {
+	app.Get("/", websocket.New(func(c *websocket.Conn) {
+		defer func() {
 			if err := c.Close(); err != nil {
 				log.Println("Error closing connection:", err)
 			}
@@ -27,14 +27,14 @@ func RunWebsocket() {
 		log.Println("New client connected")
 		clients.Store(c, true)
 
-        var record Record
-        var start_time time.Time
-        var end_time time.Time
-        var duration time.Duration
+		var record Record
+		var start_time time.Time
+		var end_time time.Time
+		var duration time.Duration
 
-        started, finished := false, false
+		started, finished := false, false
 
-        for {
+		for {
 			// Read message from client
 			msgType, msg, err := c.ReadMessage()
 			if err != nil {
@@ -52,39 +52,36 @@ func RunWebsocket() {
 				return true
 			})
 
-            value := msg[0]
+			value := msg[0]
 
-            if value == '0' && !started {
-                started = true
-                start_time = time.Now()
-            }
+			if value == '0' && !started {
+				started = true
+				start_time = time.Now()
+			}
 
-            if started && value == '1' {
-                finished = true
-            }
+			if started && value == '1' {
+				finished = true
+			}
 
-            if finished {
-                end_time = time.Now()
-                duration = end_time.Sub(start_time)
-				duration := duration.Seconds()
+			if finished {
+				end_time = time.Now()
+				duration = end_time.Sub(start_time)
 
 				record = Record{
 					start_time: start_time,
-					end_time: end_time,
-					duration: duration,
+					end_time:   end_time,
+					duration:   duration.Seconds(),
 				}
-				
-				// fmt.Printf("Start Time: %v\n", start_time)
-				// fmt.Printf("End Time: %v\n", end_time)
-                fmt.Printf("Duration: %f\n", duration)
-				
+
+				fmt.Printf("Duration: %f seconds\n", record.duration)
+
 				InsertRecord(record)
-				
+
 				started, finished = false, false
 			}
 		}
-		
+	}))
+
 	log.Println("Server started at :3000")
 	log.Fatal(app.Listen(":3000"))
-    }))
 }
