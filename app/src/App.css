@@ -1,0 +1,28 @@
+#root {
+  max-width: 1280px;
+}
+
+.container {
+  height: 100vh;
+  width: 100vw;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: white;
+  transition: background-color 0.5s ease;
+}
+
+.button {
+  position: absolute;
+  top: 0;
+  right: 00;
+  margin: 20px;
+}
+
+.green {
+  background-color: #4CAF50;
+}
+
+.red {
+  background-color: #ff2f2f;
+}
