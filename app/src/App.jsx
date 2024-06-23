@@ -1,8 +1,10 @@
 import { useState, useEffect } from "react";
+import History from "./History";
 import "./App.css";
 
 const App = () => {
   const [msg, setMsg] = useState("");
+  const [showChart, setShowChart] = useState(false);
 
   useEffect(() => {
     const ws = new WebSocket("ws://localhost:3000");
@@ -26,13 +28,18 @@ const App = () => {
     };
   }, []);
 
-  const bgColor = msg === "1" ? "green" : "red";
-  const message = msg === "1" ? "GLP Detector is OFF" : "VAGABUNDO DETECTADO";
+  const isGLP_OK = msg === "1";
+
+  const bgColor = isGLP_OK ? "green" : "red";
+  const header = isGLP_OK ? "SAFE" : "WARNING";
+  const subHeader = isGLP_OK ? "No Gas Detected" : "Gas Detected";
 
   return (
     <div className={`container ${bgColor}`}>
-      <button className="button">Historico</button>
-      <h1>{message}</h1>
+      <button className="btn-history" onClick={() => setShowChart(true)}>History</button>
+      <h1>{header}</h1>
+      <h3>{subHeader}</h3>
+      <History show={showChart} onClose={() => setShowChart(false)} />
     </div>
   );
 };
