@@ -46,7 +46,7 @@ void setup()
   Serial.println("Connected to WiFi");
 
   // Initialize WebSocket
-  webSocket.begin(host, port, "/");
+  webSocket.begin(host, port, "/ws");
   webSocket.onEvent(webSocketEvent);
   webSocket.setReconnectInterval(5000);
 

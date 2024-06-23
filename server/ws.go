@@ -15,7 +15,7 @@ var clients = sync.Map{}
 func RunWebsocket() {
 	app := fiber.New()
 
-	app.Get("/", websocket.New(func(c *websocket.Conn) {
+	app.Get("/ws", websocket.New(func(c *websocket.Conn) {
 		defer func() {
 			if err := c.Close(); err != nil {
 				log.Println("Error closing connection:", err)
@@ -81,6 +81,12 @@ func RunWebsocket() {
 			}
 		}
 	}))
+
+	app.Get("/data", func(c* fiber.Ctx) error {
+		durations := GetRecords()
+		return c.JSON(durations)
+	})
+
 
 	log.Println("Server started at :3000")
 	log.Fatal(app.Listen(":3000"))
