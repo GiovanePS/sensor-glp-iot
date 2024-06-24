@@ -1,114 +1,109 @@
 import React, { useState, useEffect } from "react";
-import "./History.css";
-import { Bar, Line } from "react-chartjs-2";
+import { Bar } from "react-chartjs-2";
 import {
   Chart as ChartJS,
   CategoryScale,
   LinearScale,
-  PointElement,
-  LineElement,
+  BarElement,
   Title,
   Tooltip,
   Legend,
 } from "chart.js";
+import "./History.css";
 
+// Register the components for Chart.js
 ChartJS.register(
   CategoryScale,
   LinearScale,
-  PointElement,
-  LineElement,
+  BarElement,
   Title,
   Tooltip,
   Legend
 );
 
-const timeLabels = ["5 AM", "6 AM", "7 AM", "8 AM", "9 AM"];
-
 const History = ({ show, onClose }) => {
   const [durations, setDurations] = useState([]);
 
-  // useEffect(() => {
-  //   const fetchData = async () => {
-  //     try {
-  //       const response = await fetch("/data");
-  //       if (!response.ok) {
-  //         throw new Error(`HTTP error! status: ${response.status}`);
-  //       }
-
-  //       const contentType = response.headers.get("content-type");
-  //       if (!contentType || !contentType.includes("application/json")) {
-  //         throw new TypeError("Received response is not in JSON format");
-  //       }
-        
-  //       const data = await response.json();
-  //       setDurations(data);
-  //     } catch (e) {
-  //       console.error("Error fetching data:", e);
-  //     }
-  //   };
-
-  //   fetchData();
-  // }, []);
-
-   useEffect(() => {
-     fetch("http://localhost:3000/data")
-       .then((response) => response.json())
-       .then((data) => setDurations(data))
-       .catch((error) => console.error("Error fetching data:", error));
-   }, []);
+  // Fetch data
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await fetch("/data");
+        const data = await response.json();
+        setDurations(data);
+      } catch (e) {
+        console.error("Error fetching data:", e);
+      }
+    };
+    fetchData();
+  }, []);
 
   if (!show) {
     return null;
   }
 
+  const processData = (durations) => {
+    if (durations.length === 0) return { bins: [], labels: [] };
+
+    const maxDuration = Math.max(...durations);
+    const binSize = 1; // 1 second intervals
+    const numBins = Math.ceil(maxDuration / binSize);
+    const bins = Array(numBins).fill(0);
+
+    durations.forEach((duration) => {
+      const index = Math.floor(duration / binSize);
+      bins[index] += 1;
+    });
+
+    const labels = bins.map((_, i) => {
+      if (i === bins.length - 1) {
+        return `${i * binSize}s+`;
+      }
+      return `${i * binSize}-${(i + 1) * binSize}s`;
+    });
+
+    return { bins, labels };
+  };
+
+  const { bins, labels } = processData(durations);
+
+  const data = {
+    labels: labels,
+    datasets: [
+      {
+        label: "Activation Duration Frequency",
+        data: bins,
+        backgroundColor: "rgba(75,192,192,0.2)",
+        borderColor: "rgba(75,192,192,1)",
+        borderWidth: 1,
+      },
+    ],
+  };
+
+  const options = {
+    responsive: true,
+    plugins: {
+      legend: {
+        position: "top",
+      },
+      title: {
+        display: true,
+        text: "Activation Duration Frequency",
+      },
+    },
+    scales: {
+      y: {
+        beginAtZero: true,
+      },
+    },
+  };
+
   return (
-    <div className="modal-back">
+    <div className="modal-backdrop">
       <div className="modal-content">
         <h2>History</h2>
         <div className="modal-chart">
-          {/* <Bar
-            data={{
-              labels: timeLabels,
-              datasets: [
-                {
-                  label: "Temperature",
-                  data: tempHumData.map((data) => data.temperature),
-                },
-                {
-                  label: "Humidity",
-                  data: tempHumData.map((data) => data.humidity),
-                },
-              ],
-            }}
-            options={{
-              elements: {
-                line: {
-                  tension: 0.5, // Tensão das linhas para suavização
-                },
-              },
-              plugins: {
-                title: {
-                  display: true,
-                  text: "Temperature & Humidity Levels",
-                },
-              },
-              scales: {
-                y: {
-                  beginAtZero: true,
-                  title: {
-                    display: true,
-                    text: "Value",
-                  },
-                },
-              },
-            }}
-          /> */}
-          <div>
-            {/* Render your durations data here */}
-            {durations.map((duration, index) => (
-              <p key={index}>{duration}</p>
-            ))}
-          </div>
+          <Bar data={data} options={options} />
         </div>
         <button className="btn-modal" onClick={onClose}>
           Close
