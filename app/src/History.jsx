@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import "./History.css";
 import { Bar, Line } from "react-chartjs-2";
 import {
@@ -22,19 +22,40 @@ ChartJS.register(
   Legend
 );
 
-const tempHumData = [
-  { temperature: 22, humidity: 45 },
-  { temperature: 18, humidity: 50 },
-  { temperature: 25, humidity: 55 },
-  { temperature: 20, humidity: 40 },
-  { temperature: 24, humidity: 60 },
-];
-
 const timeLabels = ["5 AM", "6 AM", "7 AM", "8 AM", "9 AM"];
 
 const History = ({ show, onClose }) => {
+  const [durations, setDurations] = useState([]);
 
-    const [durations, setDurations] = useState([]);
+  // useEffect(() => {
+  //   const fetchData = async () => {
+  //     try {
+  //       const response = await fetch("/data");
+  //       if (!response.ok) {
+  //         throw new Error(`HTTP error! status: ${response.status}`);
+  //       }
+
+  //       const contentType = response.headers.get("content-type");
+  //       if (!contentType || !contentType.includes("application/json")) {
+  //         throw new TypeError("Received response is not in JSON format");
+  //       }
+        
+  //       const data = await response.json();
+  //       setDurations(data);
+  //     } catch (e) {
+  //       console.error("Error fetching data:", e);
+  //     }
+  //   };
+
+  //   fetchData();
+  // }, []);
+
+   useEffect(() => {
+     fetch("http://localhost:3000/data")
+       .then((response) => response.json())
+       .then((data) => setDurations(data))
+       .catch((error) => console.error("Error fetching data:", error));
+   }, []);
 
   if (!show) {
     return null;
@@ -45,7 +66,7 @@ const History = ({ show, onClose }) => {
       <div className="modal-content">
         <h2>History</h2>
         <div className="modal-chart">
-          <Bar
+          {/* <Bar
             data={{
               labels: timeLabels,
               datasets: [
@@ -81,7 +102,13 @@ const History = ({ show, onClose }) => {
                 },
               },
             }}
-          />
+          /> */}
+          <div>
+            {/* Render your durations data here */}
+            {durations.map((duration, index) => (
+              <p key={index}>{duration}</p>
+            ))}
+          </div>
         </div>
         <button className="btn-modal" onClick={onClose}>
           Close

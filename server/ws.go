@@ -8,12 +8,18 @@ import (
 
 	"github.com/gofiber/contrib/websocket"
 	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/cors"
 )
 
 var clients = sync.Map{}
 
 func RunWebsocket() {
 	app := fiber.New()
+
+	app.Use(cors.New(cors.Config{
+        AllowOrigins: "http://localhost:5173",
+        AllowMethods: "GET",
+    }))
 
 	app.Get("/ws", websocket.New(func(c *websocket.Conn) {
 		defer func() {

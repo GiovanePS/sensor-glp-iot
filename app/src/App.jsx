@@ -7,7 +7,7 @@ const App = () => {
   const [showChart, setShowChart] = useState(false);
 
   useEffect(() => {
-    const ws = new WebSocket("ws://localhost:3000");
+    const ws = new WebSocket("ws://localhost:3000/ws");
 
     ws.onopen = () => {
       console.log("Connected to server");
