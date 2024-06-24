@@ -81,7 +81,7 @@ func RunWebsocket() {
 
 				fmt.Printf("Duration: %f seconds\n", record.duration)
 
-				// InsertRecord(record)
+				InsertRecord(record)
 
 				started, finished = false, false
 			}

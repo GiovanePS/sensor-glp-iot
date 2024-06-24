@@ -6,7 +6,6 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  border: 50px solid black;
 }
 
 .modal-content {
@@ -22,7 +21,6 @@
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  border: 1px solid green;
 }
 
 .modal-chart {

@@ -28,7 +28,7 @@ const History = ({ show, onClose }) => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetch("/data");
+        const response = await fetch("http://localhost:3000/data");
         const data = await response.json();
         setDurations(data);
       } catch (e) {
@@ -71,10 +71,10 @@ const History = ({ show, onClose }) => {
     labels: labels,
     datasets: [
       {
-        label: "Activation Duration Frequency",
+        label: "Duration Frequency",
         data: bins,
-        backgroundColor: "rgba(75,192,192,0.2)",
-        borderColor: "rgba(75,192,192,1)",
+        backgroundColor: "rgba(128,128,128,0.2)", // Gray background color
+        borderColor: "rgba(128,128,128,1)",
         borderWidth: 1,
       },
     ],
@@ -85,10 +85,6 @@ const History = ({ show, onClose }) => {
     plugins: {
       legend: {
         position: "top",
-      },
-      title: {
-        display: true,
-        text: "Activation Duration Frequency",
       },
     },
     scales: {
@@ -101,7 +97,7 @@ const History = ({ show, onClose }) => {
   return (
     <div className="modal-backdrop">
       <div className="modal-content">
-        <h2>History</h2>
+        <h2>Duration History</h2>
         <div className="modal-chart">
           <Bar data={data} options={options} />
         </div>
